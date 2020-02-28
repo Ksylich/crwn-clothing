@@ -18,7 +18,6 @@ export default class SignIn extends React.Component {
 
     try {
       await auth.signInWithEmailAndPassword(email, password);
-
       this.setState({ email: "", password: "" });
     } catch (error) {
       console.log("sign-in error", error);
