@@ -1,40 +1,35 @@
 import React from "react";
 import "./App.scss";
 
-import { Switch, Route } from "react-router-dom";
-import {connect} from 'react-redux';
+import { Switch, Route, Redirect } from "react-router-dom";
+import { connect } from "react-redux";
 
 import Header from "../header";
 import HomePage from "../../pages/home-page";
 import ShopPage from "../../pages/shop-page";
 import { auth, createUserProfileDocument } from "../../firebase/firebase.utils";
 import SignInAndSignUpPage from "../../pages/sign-in-and-sign-up/sign-in-and-sign-up";
-import {setCurrentUser} from '../../redux/user/user-action';
+import { setCurrentUser } from "../../redux/user/user-action";
 
 class App extends React.Component {
- 
   unsubscribeFromAuth = null;
 
   componentDidMount() {
-
-    const {setCurrentUser} = this.props;
+    const { setCurrentUser } = this.props;
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth);
 
         userRef.onSnapshot(snapShot => {
-         setCurrentUser({
+          setCurrentUser({
             currentUser: {
               id: snapShot.id,
               ...snapShot.data()
             }
           });
         });
-      }
-      else {
-       setCurrentUser({
-          currentUser: userAuth
-        })
+      } else {
+        setCurrentUser(userAuth);
       }
     });
   }
@@ -43,22 +38,33 @@ class App extends React.Component {
     this.unsubscribeFromAuth();
   }
 
+  redirectUser = () => {
+    const {currentUser} = this.props;
+    console.log('user', currentUser);
+    return currentUser ? (
+      <Redirect to="/" />
+    ) : (
+      <SignInAndSignUpPage />
+    );
+  };
   render() {
     return (
       <div className="App">
-        <Header  />
+        <Header />
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route exact path="/shop" component={ShopPage} />
-          <Route exact path="/signin" component={SignInAndSignUpPage} />
+          <Route exact path="/signin" render={this.redirectUser} />
         </Switch>
       </div>
     );
   }
 }
 
-const mapDispatchToProps = {
-setCurrentUser
-}
+const mapStateToProps = ({ user }) => ({ currentUser: user.currentUser });
 
-export default connect(null, mapDispatchToProps)(App);
+const mapDispatchToProps = {
+  setCurrentUser
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
