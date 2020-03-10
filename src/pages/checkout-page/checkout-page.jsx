@@ -11,7 +11,7 @@ import "./checkout-page.scss";
 import CheckoutItem from "../../components/checkout-item";
 
 const CheckoutPage = ({ cartItems, total }) => {
-  const renderCheckoutItem = item => <CheckoutItem cartItem={item} />;
+  const renderCheckoutItem = item => <CheckoutItem key={item.id} cartItem={item} />;
 
   return (
     <div className="checkout-page">
